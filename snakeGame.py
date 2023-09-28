@@ -69,6 +69,7 @@ class SnakeGame:
 
     def play_step(self):
         #a. få in inputs
+        #Inväntar på inputs av användaren
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -88,8 +89,17 @@ class SnakeGame:
         self.snake.insert(0, self.head)
 
         #c. Kolla om ormen har dött = spelet är slut
-
+        game_over = False
+        if self._is_collision(self):
+            game_over = True
+            return game_over, self.score
+        
         #d. Placera nytt frukt eller röra sig 
+        if self.head == self.food:
+            self.score +=1
+            self._place_food()
+        else:
+            self.snake.pop()
 
         #e. Updatera interna klockan och skörmen.¨
         self._update_ui()
@@ -97,8 +107,19 @@ class SnakeGame:
 
         #f. returnera spelet är över och poäng
 
-        game_over = False
+        
         return game_over, self.score
+
+    def _is_collision(self):
+        #Träffar kanterna
+        if self.head.x > self.w-BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
+            return True
+
+        #Träffar sig själv
+        if self.head in self.snake[1:]:
+            return True
+        
+        return False
 
     def _update_ui(self):
         self.display.fill(BLACK)
@@ -117,6 +138,16 @@ class SnakeGame:
     def _move(self, direction):
         x = self.head.x
         y = self.head.y
+        if direction == Direction.RIGHT:
+            x+= BLOCK_SIZE
+        elif direction == Direction.LEFT:
+            x-= BLOCK_SIZE
+        elif direction == Direction.UP:
+            y+= BLOCK_SIZE
+        elif direction == Direction.DOWN:
+            y-= BLOCK_SIZE
+
+        self.head = Point(x, y)
 
 if __name__== '__main__':
     game = SnakeGame()
