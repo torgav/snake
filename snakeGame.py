@@ -2,6 +2,7 @@ import pygame
 import random 
 from enum import Enum
 from collections import namedtuple
+
 pygame.init()
 font = pygame.font.Font('arial.ttf', 25)
 
@@ -15,7 +16,7 @@ class Direction(Enum):
 Point = namedtuple('Point','x, y')
 
 BLOCK_SIZE = 20
-SPEED = 40
+SPEED = 15
 
 #Färger
 BLACK = (0,0,0)
@@ -33,17 +34,19 @@ class SnakeGame:
         #init skärm
         #Anger skärmens begränsningar dessutom ytan för spel planen
         self.display = pygame.display.set_mode((self.w, self.h))
+
         #En liten namn som sidan kommer få
         pygame.display.set_caption('SNAKE')
+
         #En integrerad klocka som tillåter spelet ticka framåt.
         self.clock = pygame.time.Clock()
 
-        #init spel läge
         #Ormens påbörjande direktion när spelet startas
         self.direction = Direction.RIGHT
 
         #Anger vart huvudet på ormen kommer befinna sig, som är då i mitten. 
         self.head = Point(self.w/2, self.h/2)
+
         #Ger den en initiall storlek av 3 så 1 block i mitten och sedan två bakom den.
         self.snake = [self.head,
                       Point(self.head.x-BLOCK_SIZE, self.head.y),
@@ -51,8 +54,10 @@ class SnakeGame:
         
         #Poäng
         self.score = 0
+
         #Mat i mappen
         self.food = None
+
         #Anroppar våran mat placerare
         self._place_food()
 
@@ -63,6 +68,7 @@ class SnakeGame:
 
         #Anger maten denna koordinat
         self.food = Point(x, y)
+
         #Vi måste kolla om maten har kanske kommit fram på ormen, då behövs det att vi gör om det.
         if self.food in self.snake:
             self._place_food()
@@ -81,7 +87,7 @@ class SnakeGame:
                     self.direction = Direction.RIGHT
                 elif event.key == pygame.K_UP:
                     self.direction = Direction.UP
-                if event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN:
                     self.direction = Direction.DOWN
 
         #b. Ormen rör sig
@@ -90,7 +96,7 @@ class SnakeGame:
 
         #c. Kolla om ormen har dött = spelet är slut
         game_over = False
-        if self._is_collision(self):
+        if self._is_collision():
             game_over = True
             return game_over, self.score
         
@@ -106,8 +112,6 @@ class SnakeGame:
         self.clock.tick(SPEED)
 
         #f. returnera spelet är över och poäng
-
-        
         return game_over, self.score
 
     def _is_collision(self):
@@ -123,7 +127,6 @@ class SnakeGame:
 
     def _update_ui(self):
         self.display.fill(BLACK)
-
         for pt in self.snake:
             pygame.draw.rect(self.display, BLUE1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
             pygame.draw.rect(self.display, BLUE2, pygame.Rect(pt.x+4, pt.y+4, 12, 12))
@@ -143,9 +146,9 @@ class SnakeGame:
         elif direction == Direction.LEFT:
             x-= BLOCK_SIZE
         elif direction == Direction.UP:
-            y+= BLOCK_SIZE
-        elif direction == Direction.DOWN:
             y-= BLOCK_SIZE
+        elif direction == Direction.DOWN:
+            y+= BLOCK_SIZE
 
         self.head = Point(x, y)
 
