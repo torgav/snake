@@ -2,9 +2,23 @@ import pygame
 import random 
 from enum import Enum
 from collections import namedtuple
+import numpy as np
 
 pygame.init()
 font = pygame.font.Font('arial.ttf', 25)
+ 
+#Omstart 
+
+#Belöning 
+
+#Spel(händelse) > direktion.
+
+#spel_iteration
+
+#kollison check
+
+
+
 
 #Direktionerna som är tillgänglig i spelet.
 class Direction(Enum):
@@ -25,7 +39,7 @@ RED = (200,0,0)
 BLUE1 = (0,0,255)
 BLUE2 = (0,100,255)
 
-class SnakeGame:
+class SnakeGameAI:
     def __init__(self, w=640, h=480):
         #bredd (w) & Höjd (h) variabler
         self.w = w
@@ -38,9 +52,14 @@ class SnakeGame:
         #En liten namn som sidan kommer få
         pygame.display.set_caption('SNAKE')
 
-        #En integrerad klocka som tillåter spelet ticka framåt.
+        #En integrerad klocka som tillåter  elet ticka framåt.
         self.clock = pygame.time.Clock()
+        
+        self.reset()
+        
+        
 
+    def reset(self):
         #Ormens påbörjande direktion när spelet startas
         self.direction = Direction.RIGHT
 
@@ -61,6 +80,8 @@ class SnakeGame:
         #Anroppar våran mat placerare
         self._place_food()
 
+        self.frame_iteration = 0
+
     def _place_food(self):
         #Vi tar fram random koordinater, men som är begrännsande beroende på skräm storleken
         x = random.randint(0, (self.w-BLOCK_SIZE)//BLOCK_SIZE)*BLOCK_SIZE
@@ -73,36 +94,34 @@ class SnakeGame:
         if self.food in self.snake:
             self._place_food()
 
-    def play_step(self):
+    def play_step(self, action):
+        self.frame_iteration += 1
+
         #a. få in inputs
         #Inväntar på inputs av användaren
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    self.direction = Direction.LEFT    
-                elif event.key == pygame.K_RIGHT:
-                    self.direction = Direction.RIGHT
-                elif event.key == pygame.K_UP:
-                    self.direction = Direction.UP
-                elif event.key == pygame.K_DOWN:
-                    self.direction = Direction.DOWN
+    
 
         #b. Ormen rör sig
-        self._move(self.direction) #updatterar huvudet av ormen
+        self._move(action) #updatterar huvudet av ormen
         self.snake.insert(0, self.head)
 
         #c. Kolla om ormen har dött = spelet är slut
+        #Dessutom nu om ain har spelet för länge utan något nytt som händer.
+        reward = 0
         game_over = False
-        if self._is_collision():
+        if self._is_collision() or self.frame_iteration > 100*len(self.snake):
             game_over = True
-            return game_over, self.score
+            reward = -10
+            return reward, game_over, self.score
         
         #d. Placera nytt frukt eller röra sig 
         if self.head == self.food:
             self.score +=1
+            reward = 10
             self._place_food()
         else:
             self.snake.pop()
@@ -112,15 +131,17 @@ class SnakeGame:
         self.clock.tick(SPEED)
 
         #f. returnera spelet är över och poäng
-        return game_over, self.score
+        return reward, game_over, self.score
 
-    def _is_collision(self):
+    def _is_collision(self, pt=None):
+        if pt is None:
+            pt = self.head
         #Träffar kanterna
-        if self.head.x > self.w-BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
+        if pt.x > self.w-BLOCK_SIZE or pt.x < 0 or pt.y > self.h - BLOCK_SIZE or pt.y < 0:
             return True
 
         #Träffar sig själv
-        if self.head in self.snake[1:]:
+        if pt in self.snake[1:]:
             return True
         
         return False
@@ -138,30 +159,38 @@ class SnakeGame:
         pygame.display.flip()
 
 
-    def _move(self, direction):
+    def _move(self, action):
+        #[framåt, höger, vänster]
+
+        clock_wise  = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
+        idx = clock_wise.index(self.direction)
+
+        if np.array_equal(action, [1,0,0]):
+            new_dir = clock_wise[idx] #Ingen förändring
+
+        elif np.array_equal(action, [0,1,0]):
+            next_idx = (idx +1) % 4
+            new_dir = clock_wise[next_idx] #Åker åt höger
+
+        else: # [0, 0, 1]
+            next_idx = (idx -1) % 4
+            new_dir = clock_wise[next_idx] #Åker åt vänster
+
+            self.driection = new_dir
+
+        
+
+
+
         x = self.head.x
         y = self.head.y
-        if direction == Direction.RIGHT:
+        if self.direction == Direction.RIGHT:
             x+= BLOCK_SIZE
-        elif direction == Direction.LEFT:
+        elif self.direction == Direction.LEFT:
             x-= BLOCK_SIZE
-        elif direction == Direction.UP:
+        elif self.direction == Direction.UP:
             y-= BLOCK_SIZE
-        elif direction == Direction.DOWN:
+        elif self.direction == Direction.DOWN:
             y+= BLOCK_SIZE
 
         self.head = Point(x, y)
-
-if __name__== '__main__':
-    game = SnakeGame()
-
-    #Spel loopen
-    while True:
-        game_over, score = game.play_step()
-
-        if game_over == True :
-            break
-
-    print("Score:", score)
-
-    pygame.quit() 
