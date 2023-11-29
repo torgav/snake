@@ -14,8 +14,9 @@ class agent:
         self.n_games = 0
         self.epsilon = 0 #slump
         self.gamma = 0 
-        self.memory = deque(maxlen=MAX_MEMORY) #Om vi får över bord minnet så kommer systemet ta brt element från vänster.
-
+        self.memory = deque(maxlen=MAX_MEMORY) #Om vi får över bord minnet så kommer systemet ta bort element från vänster.
+        self.model = None
+        self.trainer = None
         #MODEL
 
     def get_state(self,game):
@@ -30,21 +31,69 @@ class agent:
         dir_u = game.direction == Direction.UP
         dir_d = game.direction == Direction.DOWN
 
-        state =
+        state = [
+            #Framåt
+            (dir_r and game.is_collision(point_r)) or 
+            (dir_l and game.is_collision(point_l)) or 
+            (dir_u and game.is_collision(point_u)) or 
+            (dir_d and game.is_collision(point_d)),
 
+            #Höger
+            (dir_u and game.is_collision(point_r)) or 
+            (dir_d and game.is_collision(point_l)) or 
+            (dir_l and game.is_collision(point_u)) or 
+            (dir_r and game.is_collision(point_d)),
 
+            #Vänster
+            (dir_d and game.is_collision(point_r)) or 
+            (dir_u and game.is_collision(point_l)) or 
+            (dir_r and game.is_collision(point_u)) or 
+            (dir_l and game.is_collision(point_d)),
 
-    def remember(self,state, action, reward, next_state, done):
-        pass
+            #Rörelse direktion
+            dir_l,
+            dir_r,
+            dir_u,
+            dir_d,
+
+            #Matens position
+            game.food.x < game.head.x, #mat åt vänster
+            game.food.x > game.head.x, #mat åt höger
+            game.food.y < game.head.y, #mat åvanför
+            game.food.y > game.head.y #mat under
+        ]
+        return np.array(state, dtype=int)
+
+    def remember(self, state, action, reward, next_state, done):
+        self.memory.append((state, action, reward, next_state, done)) #Om det går över max memory så popar vi ormen
 
     def train_long_memory(self):
-        pass
+        if len(self.memory) > BATCH_SIZE:
+            mini_sample = random.sample(self.memory, BATCH_SIZE) #Kommer ge tillbaks en lista av ormarna
+        else:
+            mini_sample = self.memory
+
+        states, actions, rewards, next_states, dones = zip(*mini_sample)
+        self.trainer.train_step(states, actions, rewards, next_states, dones)
 
     def train_short_memory(self, state, action, reward, next_state, done):
-        pass
+        self.trainer.train_step(state, action, reward, next_state, done)
 
     def get_action(self, state):
-        pass
+        #Ain ska utföra slumpmässiga rörelser för att utforska sin omgivning, sedam utföra det mest optimiserade dragen.
+        self.epsilon = 80 - self.n_games
+        final_move = [0,0,0]
+        if random.randint(0,200) < self.epsilon:
+            move = random.randint(0,2)
+            final_move [move] = 1
+        else:
+            state = torch.tensor(state, dtype= torch.float)
+            prediction = self.model.predict (state0)
+            move = torch.argmax(prediction).item()
+            final_move [move] = 1
+
+
+        return final_move
 
 def train():
     plot_scores = []
