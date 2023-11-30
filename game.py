@@ -30,7 +30,7 @@ class Direction(Enum):
 Point = namedtuple('Point','x, y')
 
 BLOCK_SIZE = 20
-SPEED = 12
+SPEED = 40
 
 #Färger
 BLACK = (0,0,0)
@@ -169,18 +169,14 @@ class SnakeGameAI:
             new_dir = clock_wise[idx] #Ingen förändring
 
         elif np.array_equal(action, [0,1,0]):
-            next_idx = (idx +1) % 4
+            next_idx = (idx + 1) % 4
             new_dir = clock_wise[next_idx] #Åker åt höger
 
         else: # [0, 0, 1]
-            next_idx = (idx -1) % 4
+            next_idx = (idx - 1) % 4
             new_dir = clock_wise[next_idx] #Åker åt vänster
 
-            self.driection = new_dir
-
-        
-
-
+        self.driection = new_dir
 
         x = self.head.x
         y = self.head.y
@@ -189,8 +185,8 @@ class SnakeGameAI:
         elif self.direction == Direction.LEFT:
             x-= BLOCK_SIZE
         elif self.direction == Direction.UP:
-            y-= BLOCK_SIZE
-        elif self.direction == Direction.DOWN:
             y+= BLOCK_SIZE
+        elif self.direction == Direction.DOWN:
+            y-= BLOCK_SIZE
 
         self.head = Point(x, y)
