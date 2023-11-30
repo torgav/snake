@@ -3,20 +3,29 @@ import random
 import numpy as np
 from collections import deque 
 from game import SnakeGameAI, Direction, Point
+from model import Linear_QNet, QTrainer
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
+
+#chrrrss jag är snart kalr med min del gör du resten när jag är klarr 
+
+
+
+
+
 
 class agent:
 
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0 #slump
-        self.gamma = 0 
+        self.gamma = 0.9 
         self.memory = deque(maxlen=MAX_MEMORY) #Om vi får över bord minnet så kommer systemet ta bort element från vänster.
-        self.model = None
-        self.trainer = None
+        #Detta är det klassiska spindel nättet inom ai lärande, först den börjar i stillla stadie och då tar in 11 värden som sedan går igenom den gömmda lagern som tillslut måste kompressas in till 3 siffror för att det är 3 val som ormen kan åka till, H,V,F.
+        self.model = Linear_QNet(11, 256, 3)
+        self.trainer = QTrainer(self.model, lr = LR, gamma = self.gamma)
         #MODEL
 
     def get_state(self,game):
@@ -88,7 +97,7 @@ class agent:
             final_move [move] = 1
         else:
             state = torch.tensor(state, dtype= torch.float)
-            prediction = self.model.predict (state0)
+            prediction = self.model(state0)
             move = torch.argmax(prediction).item()
             final_move [move] = 1
 
@@ -127,6 +136,9 @@ def train():
 
             if score > record:
                 record = score
+                #Vi sparar ai modelen som fick den höga scoren så att ain fortsätter att förbättra sig själv.
+                agent.model.save()
+
 
             print("GAME", agent.n_names, "SCORE:", score, "RECORD:", record)
 
