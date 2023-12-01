@@ -13,11 +13,10 @@ class Linear_QNet(nn.Module):
     def forward(self, x):
         x = F.relu(self.linear1(x))
         x = self.linear2(x)
-        
         return x
     
-    def save (self, file_name = "podel.pth"):
-        model_folder_path = "./model" 
+    def save (self, file_name = 'model.pth'):
+        model_folder_path = './model' 
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)
 
@@ -25,7 +24,7 @@ class Linear_QNet(nn.Module):
         torch.save(self.state_dict(), file_name)
 
 class QTrainer:
-    def __init__(self,model, lr, gamma):
+    def __init__(self, model, lr, gamma):
         self.lr = lr
         self.gamma = gamma 
         self.model = model
@@ -55,7 +54,7 @@ class QTrainer:
             if not done[idx]:
                 Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
 
-            target[idx][torch.argmax(action).item()] = Q_new
+            target[idx][torch.argmax(action[idx]).item()] = Q_new
 
         self.optimizer.zero_grad()
         loss = self.criterion (target, pred)

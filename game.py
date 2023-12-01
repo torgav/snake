@@ -43,7 +43,7 @@ class SnakeGameAI:
     def __init__(self, w=640, h=480):
         #bredd (w) & Höjd (h) variabler
         self.w = w
-        self.h = h
+        self.h = h  
 
         #init skärm
         #Anger skärmens begränsningar dessutom ytan för spel planen
@@ -185,8 +185,8 @@ class SnakeGameAI:
         elif self.direction == Direction.LEFT:
             x-= BLOCK_SIZE
         elif self.direction == Direction.UP:
-            y+= BLOCK_SIZE
-        elif self.direction == Direction.DOWN:
             y-= BLOCK_SIZE
+        elif self.direction == Direction.DOWN:
+            y += BLOCK_SIZE
 
         self.head = Point(x, y)

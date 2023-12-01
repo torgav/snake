@@ -30,7 +30,7 @@ class Agent:
         self.trainer = QTrainer(self.model, lr = LR, gamma = self.gamma)
         #MODEL
 
-    def get_state(self,game):
+    def get_state(self, game):
         head = game.snake[0]
         point_l = Point(head.x - 20, head.y)
         point_r = Point(head.x + 20, head.y)
@@ -95,7 +95,7 @@ class Agent:
         self.epsilon = 80 - self.n_games
         final_move = [0,0,0]
         if random.randint(0,200) < self.epsilon:
-            move = random.randint(0,2)
+            move = random.randint(0, 2)
             final_move [move] = 1
         else:
             state0 = torch.tensor(state, dtype= torch.float)
