@@ -120,7 +120,7 @@ class SnakeGameAI:
         
         #d. Placera nytt frukt eller röra sig 
         if self.head == self.food:
-            self.score +=1
+            self.score += 1
             reward = 10
             self._place_food()
         else:
