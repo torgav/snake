@@ -13,11 +13,6 @@ LR = 0.001
 #chrrrss jag är snart kalr med min del gör du resten när jag är klarr 
 
 #ookeee
-
-
-
-
-
 class Agent:
 
     def __init__(self):

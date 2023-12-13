@@ -6,20 +6,6 @@ import numpy as np
 
 pygame.init()
 font = pygame.font.Font('arial.ttf', 25)
- 
-#Omstart 
-
-#Belöning 
-
-#Spel(händelse) > direktion.
-
-#spel_iteration
-
-#kollison check
-
-
-
-
 #Direktionerna som är tillgänglig i spelet.
 class Direction(Enum):
     RIGHT = 1
@@ -28,7 +14,6 @@ class Direction(Enum):
     DOWN = 4
 
 Point = namedtuple('Point','x, y')
-
 BLOCK_SIZE = 20
 SPEED = 40
 
